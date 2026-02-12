@@ -3,11 +3,9 @@ const jwt = require("jsonwebtoken");
 let books = require("./booksdb.js");
 const regd_users = express.Router();
 
-let users = [{ username: "nguyenhoangthang", password: "123456" }];
+let users = [{ username: "thangnguyenhoang", password: "123456" }];
 
 const isValid = (username) => {
-  //returns boolean
-  //write code to check is the username is valid
   return !users.some((user) => user.username === username);
 };
 
@@ -24,27 +22,29 @@ regd_users.post("/login", (req, res) => {
   //Write your code here
   let username = req.body.username;
   let password = req.body.password;
-  if (username && password) {
-    if (authenticatedUser(username, password)) {
-      //create a JWT token
 
-      let token = jwt.sign({ username: username }, "my-secret-key", {
-        expiresIn: "1h",
-      });
-      req.session.authorization = {
-        token,
-        username,
-      };
-      return res
-        .status(200)
-        .json({ message: "User logged in successfully", token: token });
-    } else {
-      return res
-        .status(400)
-        .json({ message: "Username or password is incorrect" });
-    }
+  if (!username || !password) {
+    return res.status(404).json({ message: "Error logging in" });
   }
-  return res.status(300).json({ message: "Yet to be implemented" });
+
+  if (!authenticatedUser(username, password)) {
+    return res
+      .status(400)
+      .json({ message: "Username or password is incorrect" });
+  }
+
+  let token = jwt.sign({ username: username }, "fingerprint_customer", {
+    expiresIn: "1h",
+  });
+
+  req.session.authorization = {
+    token,
+    username,
+  };
+
+  return res
+    .status(200)
+    .json({ message: "User logged in successfully", token: token });
 });
 
 // Add a book review

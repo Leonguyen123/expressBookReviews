@@ -19,27 +19,23 @@ app.use(
 
 app.use("/customer/auth/*", function auth(req, res, next) {
   //Write the authenication mechanism here
-  if (req.session) {
-    if (req.session.authorization) {
-      let token = req.session.authorization.token;
-      jwt.verify(token, "my-secret-key", (err, user) => {
-        if (err) {
-          // Token verification failed
-          res.status(401).json({ error: "galek err" });
-        } else {
-          req.session.user = user;
-          next();
-        }
-      });
-    } else {
-      res.status(401).json({ error: "Unauthorized here" });
-    }
+  if (req.session && !req.session.authorization) {
+    res.status(401).json({ error: "Unauthorized here" });
   }
+  jwt.verify(token, "fingerprint_customer", (err, user) => {
+    if (err) {
+      // Token verification failed
+      res.status(401).json({ error: "Unauthorized" });
+    } else {
+      req.session.user = user;
+      next();
+    }
+  });
 });
 
-const PORT = 5000;
+const PORT = 6000;
 
 app.use("/customer", customer_routes);
 app.use("/", genl_routes);
 
-app.listen(PORT, () => console.log("Server is running"));
+app.listen(PORT, () => console.log("Server is running " + PORT));
